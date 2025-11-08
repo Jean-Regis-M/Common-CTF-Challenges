@@ -1,6 +1,7 @@
 ## AWS
 
 - **Bucket listing access enabled**
+- 
 
   ```
   aws s3 ls s3://domain.mn
@@ -8,6 +9,7 @@
   ```
 
 ## Firebase
+
 
 - **View json file**
   - https://app3-7d107-default-rtdb.firebaseio.com/.json
